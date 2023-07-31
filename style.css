@@ -28,10 +28,16 @@ body {
     padding: 8px 3%;
     box-shadow: 0px 5px 25px black;
 }
-
+.navbar-brand{
+    color: #fff1be;
+}
+.navbar-brand span{
+    font-weight: 800;
+    color: #f6a32e;
+}
 .parallaxDiv {
     min-height: 450px;
-    background-image: url("assets/images/pngtree-illustration-of-cryptocurrency-trading-in-a-3d-rendered-concept-picture-image_3708088.png");
+    background-image: url("assets/images/top-image.png");
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;

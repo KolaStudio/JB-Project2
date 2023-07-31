@@ -23,8 +23,10 @@
     function handleGlobalClick(e) {
         const targetId = e.target.id;
         if (e.target.matches('.nav-link')) {
-            clearInterval(getReportDataEveryTowSec);
             getHtml(targetId);
+        }
+        if (e.target.matches('.navbar-brand')) {
+            getHtml('currency');
         }
         if (e.target.matches('.switchBtn')) {
             handleCoinSelection(targetId);
@@ -52,6 +54,7 @@
             const response = await fetch(`pages/${page}.html`);
             const html = await response.text();
             htmlContainer.innerHTML = html;
+            clearInterval(getReportDataEveryTowSec);
 
             let navButtons = document.getElementsByClassName("nav-link");
             for (const btn of navButtons) {
@@ -59,7 +62,15 @@
             }
             searchBox.classList.add('visually-hidden');
 
-            if (page === "reports") { startReports() };
+            if (page === "about") {
+                $('html, body').animate({ scrollTop: $("nav").offset().top }, 1000);
+            };
+
+            if (page === "reports") {
+                $("html, body").animate({ scrollTop: $("nav").offset().top }, 1000);
+
+                startReports()
+            };
             if (page === "currency") {
                 searchBox.classList.remove('visually-hidden');
                 getFromSessionStorage();
@@ -230,11 +241,11 @@
     }
 
     function displayMoreInfo(coinInfoObj) {
-        const currencyPriseChange = coinInfoObj.moreInfo.currencyChange;
         const currentPrice = coinInfoObj.moreInfo;
+        const currencyPriseChange = currentPrice.currencyChange;
 
-        const currencyChange = coinInfoObj.moreInfo.currencyPriseChange;
-        const upOrDown = currencyChange > 0 ? "up" : "down";
+        console.log("currencyPriseChange "+currencyPriseChange+" , currentPrice "+currentPrice)
+        const upOrDown = currencyPriseChange > 0 ? "up" : "down";
         moreInfoContainer = document.getElementById(`${coinInfoObj.id}_infoDiv`);
 
         moreInfoContainer.innerHTML = `
@@ -307,7 +318,6 @@
             }
             coinsToFetch = coinsToFetch.slice(0, -1);
             dataToReports_URL = `${basicUrlToReports}${coinsToFetch}&tsyms=USD`;
-            $("html, body").animate({ scrollTop: document.body.scrollHeight }, "slow");
             collectDataToReports();
         } else {
             chartContainer.innerHTML = 'You must select at least one coin to track.'
@@ -344,7 +354,7 @@
         let options = {
             animationEnabled: true,
             backgroundColor: '#ebebeb',
-            title: { 
+            title: {
                 fontFamily: "'Exo', sans-serif",
                 text: "KolaVC Reports",
             },
