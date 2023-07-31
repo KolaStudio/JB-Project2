@@ -46,6 +46,9 @@
     async function getHtml(page) {
         try {
             const htmlContainer = document.getElementById('container');
+            const searchBox = document.getElementById('searchBox');
+            const parallaxDiv = document.getElementById('parallaxDiv');
+
             const response = await fetch(`pages/${page}.html`);
             const html = await response.text();
             htmlContainer.innerHTML = html;
@@ -54,9 +57,14 @@
             for (const btn of navButtons) {
                 btn.id === page ? btn.classList.add("active") : btn.classList.remove("active");
             }
+            searchBox.classList.add('visually-hidden');
 
-            if (page === "currency") { getFromSessionStorage() };
             if (page === "reports") { startReports() };
+            if (page === "currency") {
+                searchBox.classList.remove('visually-hidden');
+                getFromSessionStorage();
+            }
+
         } catch (err) {
             console.error(`Error To Get Html Page (${err})`);
         }
@@ -188,7 +196,7 @@
             } else {
                 displayMoreInfo(coinObj);
             }
-        } catch (err){
+        } catch (err) {
             console.error(`Error to display more info. (${err})`);
         }
     }
@@ -289,6 +297,7 @@
     let coinsDataToChart = [];
 
     function startReports() {
+        const chartContainer = document.getElementById('chartContainer');
         coinsDataToChart = [];
         let coinsToFetch = '';
 
@@ -298,10 +307,10 @@
             }
             coinsToFetch = coinsToFetch.slice(0, -1);
             dataToReports_URL = `${basicUrlToReports}${coinsToFetch}&tsyms=USD`;
-
+            $("html, body").animate({ scrollTop: document.body.scrollHeight }, "slow");
             collectDataToReports();
         } else {
-            // Block or msg "you have to select coins to report"
+            chartContainer.innerHTML = 'You must select at least one coin to track.'
         }
     }
 
@@ -334,7 +343,10 @@
     function displayChart() {
         let options = {
             animationEnabled: true,
-            title: { text: "KolaVC Reports" },
+            title: { 
+                fontFamily: "'Exo', sans-serif",
+                text: "KolaVC Reports"
+            },
             axisX: { valueFormatString: "HH:mm:ss" },
             axisY: {
                 title: "Currency Value",
@@ -367,9 +379,9 @@
                     coinItem.dataPoints.push({ x: currentTime, y: coinVal });
                 }
                 chart.render();
-            } catch (err){
-            clearInterval(getReportDataEveryTowSec);
-            console.error(`Error to get live data ${err}`);
+            } catch (err) {
+                clearInterval(getReportDataEveryTowSec);
+                console.error(`Error to get live data ${err}`);
             }
         }
 
