@@ -328,7 +328,7 @@
                         name: coinName,
                         type: "spline",
                         xValueFormatString: "HH:mm:ss",
-                        yValueFormatString: "$##0.00",
+                        yValueFormatString: "$#,##0.##",
                         showInLegend: true,
                         dataPoints: [{ x: currentTime, y: coinVal }]
                     })
@@ -343,15 +343,15 @@
     function displayChart() {
         let options = {
             animationEnabled: true,
+            backgroundColor: '#ebebeb',
             title: { 
                 fontFamily: "'Exo', sans-serif",
-                text: "KolaVC Reports"
+                text: "KolaVC Reports",
             },
             axisX: { valueFormatString: "HH:mm:ss" },
             axisY: {
-                title: "Currency Value",
-                suffix: " $",
-                valueFormatString: "#.0"
+                title: "Value",
+                valueFormatString: "$#,##0.##"
             },
             legend: {
                 cursor: "pointer",
