@@ -92,7 +92,6 @@
             getFromSessionStorage();
         }
     }
-
     // =========== Get Coins + Create Arr and Storage ===========
     async function getAndDisplayCoinsList() {
         try {
@@ -389,7 +388,7 @@
             toolTip: { shared: true },
             data: coinsDataToChart
         }
-        
+
         let chart = new CanvasJS.Chart("chartContainer", options);
         chart.render();
 
