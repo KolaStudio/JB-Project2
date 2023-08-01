@@ -18,7 +18,7 @@
 
     getHtml("currency");
 
-    // =============== Listeners ============================
+    // =============================== Listeners ====================================
     document.addEventListener("click", handleGlobalClick);
     function handleGlobalClick(e) {
         const targetId = e.target.id;
@@ -37,47 +37,59 @@
     }
 
     searchBox.addEventListener("keyup", handleSearch);
-    function handleSearch() {
-        coinsContainer.innerHTML = "";
-        const txt = searchBox.value;
-        const result = coinsArr.filter(coin => coin.name.toLowerCase().includes(txt.toLowerCase()) || coin.symbol.toLowerCase().includes(txt.toLowerCase()));
-        displayCoins(result);
-    };
 
-    // =========== Fetch Html - Pages Navigation =================
-    async function getHtml(page) {
+    //  ============================ General Functions ================================
+    function numberWithCommas(num) {
+        let fixedNum = 1 * num.toFixed(3);
+        fixedNum = fixedNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return fixedNum;
+    }
+
+    async function getJson(url) {
         try {
-            const htmlContainer = document.getElementById('container');
-            const searchBox = document.getElementById('searchBox');
-            const parallaxDiv = document.getElementById('parallaxDiv');
-
-            const response = await fetch(`pages/${page}.html`);
-            const html = await response.text();
-            htmlContainer.innerHTML = html;
-            clearInterval(getReportDataEveryTowSec);
-
-            let navButtons = document.getElementsByClassName("nav-link");
-            for (const btn of navButtons) {
-                btn.id === page ? btn.classList.add("active") : btn.classList.remove("active");
-            }
-            searchBox.classList.add('visually-hidden');
-
-            if (page === "about") {
-                $('html, body').animate({ scrollTop: $("nav").offset().top }, 1000);
-            };
-
-            if (page === "reports") {
-                $("html, body").animate({ scrollTop: $("nav").offset().top }, 1000);
-
-                startReports()
-            };
-            if (page === "currency") {
-                searchBox.classList.remove('visually-hidden');
-                getFromSessionStorage();
-            }
-
+            const response = await fetch(url);
+            const json = await response.json();
+            return json;
         } catch (err) {
-            console.error(`Error To Get Html Page (${err})`);
+            console.error(`Error To fetch json. (${err})`);
+        }
+    }
+
+    function saveToSessionStorage(obj, key) {
+        const data_str = JSON.stringify(obj);
+        sessionStorage.setItem(key, data_str);
+    }
+
+    // =============================== Pages Navigation ===============================
+    async function getHtml(page) {
+
+        const htmlContainer = document.getElementById('container');
+        const searchBox = document.getElementById('searchBox');
+        const parallaxDiv = document.getElementById('parallaxDiv');
+
+        const response = await fetch(`pages/${page}.html`);
+        const html = await response.text();
+        htmlContainer.innerHTML = html;
+        clearInterval(getReportDataEveryTowSec);
+
+        let navButtons = document.getElementsByClassName("nav-link");
+        for (const btn of navButtons) {
+            btn.id === page ? btn.classList.add("active") : btn.classList.remove("active");
+        }
+        searchBox.classList.add('visually-hidden');
+
+        if (page === "about") {
+            $('html, body').animate({ scrollTop: $("nav").offset().top }, 1000);
+        };
+
+        if (page === "reports") {
+            $("html, body").animate({ scrollTop: $("nav").offset().top }, 1000);
+
+            startReports()
+        };
+        if (page === "currency") {
+            searchBox.classList.remove('visually-hidden');
+            getFromSessionStorage();
         }
     }
 
@@ -88,16 +100,6 @@
             createCoinsArrayAndAddToStorage(coins);
         } catch (err) {
             console.error(`Can not display coins. (${err})`);
-        }
-    }
-
-    async function getJson(url) {
-        try {
-            const response = await fetch(url);
-            const json = await response.json();
-            return json;
-        } catch (err) {
-            console.error(`Error To fetch json. (${err})`);
         }
     }
 
@@ -123,11 +125,7 @@
         saveToSessionStorage(coinsArr, COINS_List_StorageKey);
     }
 
-    // ======== Create Storage ========
-    function saveToSessionStorage(obj, key) {
-        const data_str = JSON.stringify(obj);
-        sessionStorage.setItem(key, data_str);
-    }
+    // ======== Get From Storage ========
     function getFromSessionStorage() {
         const coins_str = sessionStorage.getItem(COINS_List_StorageKey);
         const selected_str = sessionStorage.getItem(COINS_Selected_StorageKey);
@@ -144,11 +142,11 @@
         }
     }
 
-    // ========== Display Coins ============
-    function displayCoins(arr) {
+    // ======================================== Display Coins ===========================================
+    function displayCoins(coinsToDisplay) {
         let html = '';
-        if (arr.length > 0) {
-            for (const coin of arr) {
+        if (coinsToDisplay.length > 0) {
+            for (const coin of coinsToDisplay) {
                 html += `
             <div class="col">
                 <div class="card" id="${coin.id}_card">
@@ -171,7 +169,7 @@
         } else {
             html = `
             <div class="nothingToShow">
-                <img class="coinImg" src="assets/images/not-found.png" alt="Nothing To Show icon">    
+                <img class="coinImg" src="assets/icons/not-found.png" alt="Nothing To Show icon">    
                 Nothing To Show...
             </div>
             `
@@ -185,7 +183,14 @@
         return result;
     }
 
-    // =========== More Info =============  
+    function handleSearch() {
+        coinsContainer.innerHTML = "";
+        const txt = searchBox.value;
+        const result = coinsArr.filter(coin => coin.name.toLowerCase().includes(txt.toLowerCase()) || coin.symbol.toLowerCase().includes(txt.toLowerCase()));
+        displayCoins(result);
+    }
+
+    // ======================================= More Info =============================================   
     async function handleMoreInfo(btnId) {
         try {
             let coinStr = btnId.split("_")[0];
@@ -229,10 +234,10 @@
 
         const moreInfoData = {
             lastUpdate: Math.round(Date.now() / (1000 * 60)),
-            currencyChange: currencyPriseChange,
-            usd: currentPrice.usd,
-            eur: currentPrice.eur,
-            ils: currentPrice.ils
+            currencyChange: numberWithCommas(currencyPriseChange),
+            usd: numberWithCommas(currentPrice.usd),
+            eur: numberWithCommas(currentPrice.eur),
+            ils: numberWithCommas(currentPrice.ils)
         }
         coinsArr[index].moreInfo = moreInfoData;
         saveToSessionStorage(coinsArr, COINS_List_StorageKey);
@@ -244,23 +249,36 @@
         const currentPrice = coinInfoObj.moreInfo;
         const currencyPriseChange = currentPrice.currencyChange;
 
-        console.log("currencyPriseChange "+currencyPriseChange+" , currentPrice "+currentPrice)
         const upOrDown = currencyPriseChange > 0 ? "up" : "down";
         moreInfoContainer = document.getElementById(`${coinInfoObj.id}_infoDiv`);
 
         moreInfoContainer.innerHTML = `
             <div class="statusDiv ${upOrDown}Color">
-                <img class="arrowImg" src="assets/images/${upOrDown}.png" alt="Price Change ${upOrDown}" >
+                <img class="arrowImg" src="assets/icons/${upOrDown}.png" alt="Price Change ${upOrDown}" >
                 ${currencyPriseChange} %
             </div>
-            <div> USD: ${currentPrice.usd} &#36;</div>
-            <div> EUR: ${currentPrice.eur} &#8364;</div>
-            <div> ILS: ${currentPrice.ils} &#8362;</div>
+            <table>
+                <tr>
+                    <td>USD - </td>
+                    <td>${currentPrice.usd}</td>
+                    <td>&#36;</td>
+                </tr>
+                <tr>
+                    <td>EUR - </td>
+                    <td>${currentPrice.eur}</td>
+                    <td>&#8364;</td>
+                </tr>
+                <tr>
+                    <td>ILS - </td>
+                    <td>${currentPrice.ils}</td>
+                    <td>&#8362;</td>
+                </tr>
+            </table>
         `;
         $(moreInfoContainer).collapse('toggle');
     }
 
-    // ========== Create Selected List ==========
+    // ==================================== Select Coins ========================================
     function handleCoinSelection(btnId) {
         const coinStr = btnId.split("_")[0];
         const switchBtn = document.getElementById(`${coinStr}_switchBtn`);
@@ -318,13 +336,13 @@
             }
             coinsToFetch = coinsToFetch.slice(0, -1);
             dataToReports_URL = `${basicUrlToReports}${coinsToFetch}&tsyms=USD`;
-            collectDataToReports();
+            createCoinObjectToChart();
         } else {
             chartContainer.innerHTML = 'You must select at least one coin to track.'
         }
     }
 
-    async function collectDataToReports() {
+    async function createCoinObjectToChart() {
         try {
             const coinsCurrentVal = await getJson(dataToReports_URL);
 
@@ -368,11 +386,10 @@
                 fontSize: 16,
                 itemclick: toggleDataSeries
             },
-            toolTip: { shared: true }
+            toolTip: { shared: true },
+            data: coinsDataToChart
         }
-
-        options.data = coinsDataToChart;
-
+        
         let chart = new CanvasJS.Chart("chartContainer", options);
         chart.render();
 
